@@ -99,10 +99,14 @@ lhs1-stratospheric-experiment/
 ├── LICENSE
 ├── firmware/          # electronics software
 ├── cad/               # Fusion 360 3D models and renders
-├── hardware/          # Experiment hardware and electronics
+|   ├── stl/           # 3D printed components stl files
+|   ├── step/          # full final 3D models
+|   ├── renders/       # 3D models render images
+|   └── CHANGELOG.md   # design change history
+├── hardware/          # experiment hardware and electronics
 ├── data/
-│   ├── raw/           
-│   └── processed/     
+│   ├── raw/           # test and flight upload dumps      
+│   └── processed/     # processed data
 ├── analysis/          # analysis scripts, graphs
 └── docs/              
 ```
