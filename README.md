@@ -6,7 +6,7 @@ This project is the stratospheric experiment for a high-altitude balloon flight.
 &nbsp;
 
 <div align="center">
-  <img width="450" height="264" alt="Rescue UAV" src="/hardware/payload-size-comparison.heic" />
+  <img width="450" height="264" alt="Payload Cubes Size Comparison" src="/hardware/payload-size-comparison.heic" />
   <br>
   <em>Payload Cubes Size Comparison</em>
 </div>
@@ -105,7 +105,7 @@ The 3D-printed PET-G (Polyethylene Terephthalate Glyco — one of the plastics u
 &nbsp;
 
 <div align="center">
-  <img width="450" height="264" alt="Rescue UAV" src="/hardware/payload-2" />
+  <img width="450" height="264" alt="Payload Cube with Lid Opened" src="/hardware/payload-2.jpg" />
   <br>
   <em>Payload Cube with Lid Opened</em>
 </div>
