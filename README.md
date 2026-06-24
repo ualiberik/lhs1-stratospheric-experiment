@@ -3,6 +3,16 @@
 ## Overview
 This project is the stratospheric experiment for a high-altitude balloon flight. The experiment studies thermal insulation efficiency of lunar regolith (simulant) collecting important data for the future colonization of the Moon. The experiment was selected by iEDU Cubes in Space program for the flight on the NASA RB-11 high-altitude balloon.
 
+&nbsp;
+
+<div align="center">
+  <img width="450" height="264" alt="Rescue UAV" src="/hardware/payload-size-comparison.heic" />
+  <br>
+  <em>Payload Cubes Size Comparison</em>
+</div>
+
+&nbsp;
+
 ## Status
 Currently, the experiment is assembled and is tested on the bench.
 
@@ -92,6 +102,16 @@ group being not protected by a regolith shield.
 
 The 3D-printed PET-G (Polyethylene Terephthalate Glyco — one of the plastics used for 3D-printing) cube payload cube contains all 3 groups providing construction rigidity and allowing mount components.
 
+&nbsp;
+
+<div align="center">
+  <img width="450" height="264" alt="Rescue UAV" src="/hardware/payload-2" />
+  <br>
+  <em>Payload Cube with Lid Opened</em>
+</div>
+
+&nbsp;
+
 ## Repository Structure
 ```text
 lhs1-stratospheric-experiment/
@@ -108,7 +128,8 @@ lhs1-stratospheric-experiment/
 │   ├── raw/           # test and flight upload dumps      
 │   └── processed/     # processed data
 ├── analysis/          # analysis scripts, graphs
-└── docs/              
+├── docs/              
+└── assets/            # service files
 ```
 ## Author Contributions
 1. **Uali Berik** — Conceptualization, Methodology, Mechanical design (CAD),
