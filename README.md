@@ -8,7 +8,7 @@ This project is the stratospheric experiment for a high-altitude balloon flight.
 <div align="center">
   <img width="450" height="264" alt="Payload Cubes Size Comparison" src="/hardware/payload-size-comparison.jpg" />
   <br>
-  <em>Payload Cubes Size Comparison</em>
+  <em>Payload Cube Size Comparison</em>
 </div>
 
 &nbsp;
@@ -84,6 +84,17 @@ internal temperature isolated by the regolith shield.
 5. **Regolith configuration (near-vacuum)** — defines regolith's contribution to thermal conductivity in vacuum chamber conditions — the most close to the real flight test.
 
 ## Experiment Design
+
+&nbsp;
+
+<div align="center">
+  <img width="450" height="264" alt="Payload Cube Sections" src="/cad/renders/payload-cube-inside.png" />
+  <br>
+  <em>Payload Cube Sections</em>
+</div>
+
+&nbsp;
+
 The experiment studies thermal insulation properties of lunar regolith simulant LHS-1 in stratospheric
 conditions being launched on a balloon. The experiment components will be divided into 3 groups:
 
@@ -99,6 +110,7 @@ experiment, covering the sensor and protecting it from cooling.
 3. **Control group** — includes Adafruit BMP388 atmospheric pressure and temperature sensor. It measures
 independent variables (external temperature, atmospheric pressure) and plays the role of a control
 group being not protected by a regolith shield.
+
 
 The 3D-printed PET-G (Polyethylene Terephthalate Glyco — one of the plastics used for 3D-printing) cube payload cube contains all 3 groups providing construction rigidity and allowing mount components.
 
