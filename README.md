@@ -6,7 +6,7 @@ This project is the stratospheric experiment for a high-altitude balloon flight.
 &nbsp;
 
 <div align="center">
-  <img width="450" height="264" alt="Payload Cubes Size Comparison" src="/hardware/payload-size-comparison.heic" />
+  <img width="450" height="264" alt="Payload Cubes Size Comparison" src="/hardware/payload-size-comparison.jpg" />
   <br>
   <em>Payload Cubes Size Comparison</em>
 </div>
