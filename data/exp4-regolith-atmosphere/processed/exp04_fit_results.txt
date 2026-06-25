@@ -1,0 +1,21 @@
+EXP-04  Newton Cooling Fit Results
+==================================================
+Burst cycle : 660 s  (awake 60 s + sleep 600 s)
+Bursts total: 4  (burst 0 discarded as equalization)
+Cooling bursts: 3
+Bursts with excess > 0.1 °C: 3
+T_amb_bmp  = 29.037 °C
+T_amb_mcp  = 28.052 °C
+
+MCP9808 : A = 16.94 °C,  tau = 141 s  (+-0 s)
+BMP388  : cooling complete within first sleep window (600 s).  tau_bmp << 600 s — indeterminate.
+
+tau_mcp = 141 s
+tau_bmp < 127 s  (upper bound from noise floor 0.1 degC)
+R = tau_mcp / tau_bmp > 1.11  (lower bound)
+
+Burst means:
+ burst    t(s)     T_bmp     T_mcp    exc_bmp    exc_mcp      n
+     1       0    47.144    44.996    +18.107    +16.943    680
+     2     660    29.037    28.212     +0.000     +0.160    812
+     3    1320    29.321    28.052     +0.284     +0.000    675
