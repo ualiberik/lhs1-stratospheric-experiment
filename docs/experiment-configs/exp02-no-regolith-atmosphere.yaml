@@ -34,7 +34,7 @@ firmware:
   flash_control_firmware: "firmware/flashutil/flashutil.ino"
   flash_dumper: "firmware/ion_flash_dumper/ion_flash_dumper.ino"
   awake_time_s: 60
-  sleep_time_s: 600
+  sleep_time_s: 60      # bench-test value; flight firmware uses 600
   write_interval_ms: 100
 
 environment:
@@ -49,7 +49,7 @@ protocol:
     4: "Heat the payload externally in 60 degC oven for 10 minutes"
     5: "Power on the device with Li-ion battery through multimeter"
     6: "Wait 10 min for temperature to equalize across the cube"
-    7: "Observe cooling to ambient. Run for minimum 1 hour"
+    7: "Observe cooling to ambient. Run for minimum 45 minutes"
     8: "Upload ion_flash_dumper to esp32-s3"
     9: "Download data"
 
@@ -69,7 +69,7 @@ expected_results:
 
 analysis:
   # Burst structure: 60 s awake (600 samples at 100 ms) → 600 s sleep → repeat.
-  # Identical procedure to EXP-04 for direct comparability.
+  # Burst cycle: 120 s. Identical procedure to EXP-04 for direct comparability.
 
   steps:
     1: >
@@ -80,7 +80,7 @@ analysis:
       For each burst k (k = 1, 2, …):
         T_bmp[k]  = mean of column 3 across all rows in burst k
         T_mcp[k]  = mean of column 7 across all rows in burst k
-        t[k]      = (k − 1) × 660 s
+        t[k]      = (k − 1) × 120 s
     3: >
       Estimate ambient temperature T_amb = mean of the last 2 burst averages.
     4: >

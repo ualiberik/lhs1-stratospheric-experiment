@@ -36,7 +36,7 @@ firmware:
   flash_control_firmware: "firmware/flashutil/flashutil.ino"
   flash_dumper: "firmware/ion_flash_dumper/ion_flash_dumper.ino"
   awake_time_s: 60
-  sleep_time_s: 600
+  sleep_time_s: 60      # bench-test value; flight firmware uses 600
   write_interval_ms: 100
 
 environment:
@@ -51,7 +51,7 @@ protocol:
     3: "Heat the payload externally in 60 degC oven for 10 minutes"
     4: "Power on the device with Li-ion battery through multimeter"
     5: "Wait 10 min for temperature to equalize across the cube"
-    6: "Observe cooling to ambient. Run for minimum 1 hour"
+    6: "Observe cooling to ambient. Run for minimum 45 minutes"
     7: "Upload ion_flash_dumper to esp32-s3"
     8: "Download data"
 
@@ -69,12 +69,11 @@ expected_results:
     ΔT visible but smaller than in EXP-05 (convection through inter-particle air active at 1 atm).
 
 analysis:
-  # Burst structure: 60 s awake (600 samples at 100 ms) → 600 s sleep → repeat.
-  # Within a burst, sensor noise (±0.0625 °C) may obscure slow temperature change.
+  # Burst structure: 60 s awake (600 samples at 100 ms) → 60 s sleep → repeat.
+  # Cycle period: 120 s. At τ ~ 150 s (1 atm bench test), ~20 burst points
+  # span the full cooling curve — sufficient for Newton's law fit.
   # Averaging all 600 samples per burst reduces noise by √600 ≈ 24×,
   # yielding effective precision ~0.003 °C per burst point.
-  # Most cooling occurs during the 600 s sleep windows, so inter-burst
-  # temperature differences are the primary signal.
 
   steps:
     1: >
@@ -85,7 +84,7 @@ analysis:
       For each burst k (k = 1, 2, …):
         T_bmp[k]  = mean of column 3 across all rows in burst k
         T_mcp[k]  = mean of column 7 across all rows in burst k
-        t[k]      = (k − 1) × 660 s
+        t[k]      = (k − 1) × 120 s
     3: >
       Estimate ambient temperature T_amb = mean of the last 2 burst averages
       (when both sensors have converged to room temperature).
@@ -95,11 +94,9 @@ analysis:
       Free parameters: A (initial excess temperature), τ (cooling time constant).
       Use nonlinear least squares (e.g., scipy.optimize.curve_fit).
     5: >
-      If fewer than 3 post-equalization bursts show meaningful temperature change
-      (i.e., cooling completes within the first sleep window), fall back to
-      intra-burst fitting: apply the same Newton's law fit to the 600 individual
-      samples within burst 1, using t_sample = sample_index × 0.1 s.
-      At τ ~ 1000 s, expected intra-burst ΔT ≈ 2–3 °C — detectable above noise.
+      If fewer than 3 post-equalization bursts show meaningful temperature change,
+      fall back to intra-burst fitting: apply the same Newton's law fit to the 600
+      individual samples within burst 1, using t_sample = sample_index × 0.1 s.
 
   primary_metric: "Insulation ratio R = τ_mcp / τ_bmp"
 
