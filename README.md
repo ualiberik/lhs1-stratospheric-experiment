@@ -88,7 +88,7 @@ internal temperature isolated by the regolith shield.
 &nbsp;
 
 <div align="center">
-  <img width="450" height="264" alt="Payload Cube Sections" src="/cad/renders/payload-cube-inside.png" />
+  <img width="800" height="800" alt="Payload Cube Sections" src="/cad/renders/payload-cube-in-section.png />
   <br>
   <em>Payload Cube Sections</em>
 </div>
