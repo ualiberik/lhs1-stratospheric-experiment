@@ -1,0 +1,109 @@
+# EXP-03: No-Regolith Baseline — Near-Vacuum
+# Dataset 3 of 5
+
+experiment:
+  id: 3
+  title: "LHS-1 No-Regolith Baseline in Near-Vacuum"
+  date: 2026-06-25
+
+hardware:
+  esp32-s3:
+    installed: true
+    role: "Microcontroller"
+    shielded: false
+  Li-ion-JST-charger:
+    installed: true
+    role: "Power supply from li-ion battery via JST"
+    shielded: false
+  mcp9808:
+    installed: true
+    role: "Exposed temperature — DEPENDENT variable (no regolith shield)"
+    shielded: false
+  regolith_shield:
+    installed: false
+  bmp388:
+    installed: true
+    role: "External temperature & pressure — INDEPENDENT variables"
+    shielded: false
+  vacuum_chamber:
+    installed: true
+    target_pressure_hPa: 10
+
+firmware:
+  main_flight_firmware: "firmware/ion_2026_berikov/ion_2026_berikov.ino"
+  flash_control_firmware: "firmware/flashutil/flashutil.ino"
+  flash_dumper: "firmware/ion_flash_dumper/ion_flash_dumper.ino"
+  awake_time_s: 60
+  sleep_time_s: 600
+  write_interval_ms: 100
+
+environment:
+  pressure_hPa: 10   # vacuum chamber
+  temperature_method: "Heat the cube, wait temperature to equalize, then observe cooling inside the vacuum chamber"
+
+protocol:
+  steps:
+    1: "Upload flashutil to esp32-s3"
+    2: "Delete existing log files from flash"
+    3: "Upload ion_2026_berikov to esp32-s3"
+    4: "Heat the payload externally in 60 degC oven for 10 minutes"
+    5: "Place the heated payload inside the vacuum chamber (unsealed)"
+    6: "Power on the device with Li-ion battery through multimeter"
+    7: "Wait 10 min for temperature to equalize across the cube"
+    8: "Seal the chamber. Begin pumping. Target: 10 hPa on the independent gauge"
+    9: "Observe cooling to ambient. Run for minimum 1 hour"
+    10: "Vent chamber slowly. Remove payload"
+    11: "Upload ion_flash_dumper to esp32-s3"
+    12: "Download data"
+
+data_stream:
+  note: "CSV, no header. Wakeup boundaries marked by '00000000-000000' separator lines."
+  key_columns:
+    3:  "temp_bmp388_degC     — external temperature [°C]"
+    4:  "pressure_hPa         — chamber pressure [hPa] (may saturate near 300 hPa)"
+    7:  "temp_mcp9808_degC    — exposed sensor temperature [°C] (stored in former 'ax' field)"
+
+expected_results:
+  pressure_hPa: "BMP388 ≤ 300 hPa (may saturate); independent gauge confirms ~10 hPa"
+  mcp9808_vs_bmp388: >
+    Without regolith in near-vacuum, any asymmetry between sensors reflects
+    differences in thermal mass, geometry, and radiative coupling — not insulation.
+    R_03 may differ from R_02 (atmosphere) because convective coupling to ambient
+    air is absent, altering the relative cooling rates of the two sensors.
+
+analysis:
+  # Same burst structure as EXP-05. Apply identical procedure to enable
+  # direct comparison of R_03 with R_EXP05.
+  # In near-vacuum, cooling is radiation-dominated and slower;
+  # more bursts are expected to contain meaningful temperature signal.
+
+  steps:
+    1: >
+      Parse raw log: split into bursts at '00000000-000000' separator lines.
+      Discard burst 0 (equalization phase).
+      Burst 1 is the first post-equalization snapshot (reference starting point).
+    2: >
+      For each burst k (k = 1, 2, …):
+        T_bmp[k]  = mean of column 3 across all rows in burst k
+        T_mcp[k]  = mean of column 7 across all rows in burst k
+        t[k]      = (k − 1) × 660 s
+    3: >
+      Estimate ambient temperature T_amb = mean of the last 2 burst averages.
+    4: >
+      Fit Newton's cooling law independently to each sensor's burst means:
+        T(t) = T_amb + A × exp(−t / τ)
+      Use nonlinear least squares (e.g., scipy.optimize.curve_fit).
+    5: >
+      If fewer than 3 post-equalization bursts show meaningful temperature change,
+      fall back to intra-burst fitting on the 600 samples of burst 1
+      (t_sample = sample_index × 0.1 s).
+
+  primary_metric: "Baseline insulation ratio R_03 = τ_mcp / τ_bmp"
+
+  baseline_output:
+    consumed_by: "EXP-05 (regolith, near-vacuum)"
+    formula: "Δ_vac = R_EXP05 − R_03"
+    interpretation: >
+      R_03 captures inherent sensor asymmetry in near-vacuum independent of regolith.
+      It may differ from R_02 (atmosphere) — both baselines are required for a
+      clean separation of regolith contribution from sensor systematics.
