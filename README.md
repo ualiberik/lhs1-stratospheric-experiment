@@ -85,16 +85,6 @@ internal temperature isolated by the regolith shield.
 
 ## Experiment Design
 
-&nbsp;
-
-<div align="center">
-  <img width="800" height="800" alt="Payload Cube Sections" src="/cad/renders/payload-cube-in-section.png />
-  <br>
-  <em>Payload Cube Sections</em>
-</div>
-
-&nbsp;
-
 The experiment studies thermal insulation properties of lunar regolith simulant LHS-1 in stratospheric
 conditions being launched on a balloon. The experiment components will be divided into 3 groups:
 
