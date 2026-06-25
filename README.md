@@ -123,8 +123,7 @@ lhs1-stratospheric-experiment/
 ├── cad/               # Fusion 360 3D models and renders
 |   ├── stl/           # 3D printed components stl files
 |   ├── step/          # full final 3D models
-|   ├── renders/       # 3D models render images
-|   └── CHANGELOG.md   # design change history
+|   └── renders/       # 3D models render images
 ├── hardware/          # experiment hardware and electronics
 ├── data/
 │   ├── raw/           # test and flight upload dumps      
