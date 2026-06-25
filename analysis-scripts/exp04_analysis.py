@@ -11,9 +11,9 @@ from scipy.optimize import curve_fit
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 BASE = os.path.dirname(os.path.abspath(__file__))
-LOG_PATH = os.path.join(BASE, '../data/exp4-regolith-atmosphere/raw/'
-                               'exp04_regolith-atm_2026-06-25_run1.log')
-OUT_DIR  = os.path.join(BASE, '../data/exp4-regolith-atmosphere/processed')
+LOG_PATH = os.path.join(BASE, '../data/exp04-reg-atm/raw/'
+                               'exp04_reg-atm_2026-06-25_run1.log')
+OUT_DIR  = os.path.join(BASE, '../data/exp04-reg-atm/processed')
 
 # ── Firmware parameters (at time of collection) ───────────────────────────────
 AWAKE_S  = 60
