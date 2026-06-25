@@ -49,7 +49,7 @@ protocol:
     1: "Upload flashutil to esp32-s3"
     2: "Delete existing log files from flash"
     3: "Upload ion_2026_berikov to esp32-s3"
-    3: "Heat the payload externally in 60 degC oven"
+    3: "Heat the payload externally in 60 degC oven for 10 minutes"
     4: "Place the heated payload inside the vacuum chamber (unsealed)"
     5: "Power on the device with Li-ion battery through multimeter"
     6: "Wait 10 min for temperature to equalize across the cube"
