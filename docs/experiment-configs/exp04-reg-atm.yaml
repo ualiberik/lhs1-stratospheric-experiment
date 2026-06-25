@@ -48,12 +48,12 @@ protocol:
     1: "Upload flashutil to esp32-s3"
     2: "Delete existing log files from flash"
     3: "Upload ion_2026_berikov to esp32-s3"
-    3: "Heat the payload externally in 60 degC oven for 10 minutes"
     4: "Power on the device with Li-ion battery through multimeter"
-    5: "Wait 10 min for temperature to equalize across the cube"
-    6: "Observe cooling to ambient. Run for minimum 45 minutes"
-    7: "Upload ion_flash_dumper to esp32-s3"
-    8: "Download data"
+    5: "Heat the payload externally in 60 degC oven for 10 minutes"
+    6: "Wait 10 min for temperature to equalize across the cube"
+    7: "Observe cooling to ambient. Run for minimum 45 minutes"
+    8: "Upload ion_flash_dumper to esp32-s3"
+    9: "Download data"
 
 data_stream:
   note: "CSV, no header. Wakeup boundaries marked by '00000000-000000' separator lines."
