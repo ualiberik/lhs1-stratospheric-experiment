@@ -25,6 +25,7 @@ from scipy.optimize import curve_fit
 
 AWAKE_S      = 60       # fixed in firmware
 COL_BMP      = 2        # BMP388 temperature column (0-based)
+COL_PRS      = 3        # BMP388 pressure column (0-based), hPa
 COL_MCP      = 6        # MCP9808 temperature column (0-based)
 SEPARATOR    = '00000000-000000'
 MIN_EXCESS_C = 0.10     # minimum excess above T_amb to count a burst as meaningful
@@ -55,9 +56,10 @@ def parse_log(path):
                 continue
             try:
                 bmp = float(parts[COL_BMP])
+                prs = float(parts[COL_PRS])
                 mcp = float(parts[COL_MCP])
                 if -100 <= bmp <= 200 and -100 <= mcp <= 200:
-                    current.append((bmp, mcp))
+                    current.append((bmp, prs, mcp))
             except ValueError:
                 continue
     if current:
@@ -67,7 +69,12 @@ def parse_log(path):
 
 def burst_mean(burst):
     arr = np.array(burst)
-    return arr[:, 0].mean(), arr[:, 1].mean()
+    T_bmp = arr[:, 0].mean()
+    # pressure: ignore zeros (sensor init), use only valid readings
+    prs_valid = arr[:, 1][arr[:, 1] > 1.0]
+    P_mean = prs_valid.mean() if len(prs_valid) > 0 else float('nan')
+    T_mcp = arr[:, 2].mean()
+    return T_bmp, P_mean, T_mcp
 
 
 # ── Fitting ───────────────────────────────────────────────────────────────────
@@ -103,11 +110,15 @@ def main():
     parser.add_argument('--fit-offset', type=int, default=0, metavar='N',
                         help='Skip first N cooling bursts from the fit '
                              '(e.g. atmospheric equilibration before vacuum). Default: 0.')
+    parser.add_argument('--fit-end', type=int, default=-1, metavar='N',
+                        help='Last burst number (inclusive) to include in the fit. '
+                             'Use to exclude re-pressurisation bursts. Default: -1 (use all).')
     args = parser.parse_args()
 
     log_path   = os.path.abspath(args.log_file)
     sleep_s    = args.sleep_s
     fit_offset = args.fit_offset
+    fit_end    = args.fit_end
     cycle_s    = AWAKE_S + sleep_s
 
     log_stem = os.path.splitext(os.path.basename(log_path))[0]
@@ -129,40 +140,55 @@ def main():
 
     all_means = [burst_mean(b) for b in bursts]
     T_bmp_all = np.array([m[0] for m in all_means])
-    T_mcp_all = np.array([m[1] for m in all_means])
+    P_all     = np.array([m[1] for m in all_means])
+    T_mcp_all = np.array([m[2] for m in all_means])
 
     # Auto-detect peak: cooling starts at the hottest burst
     peak_idx    = int(np.argmax(T_bmp_all))
     cool_means  = all_means[peak_idx:]
 
     T_bmp_cool = np.array([m[0] for m in cool_means])
-    T_mcp_cool = np.array([m[1] for m in cool_means])
+    T_mcp_cool = np.array([m[2] for m in cool_means])
 
     T_amb_bmp = T_bmp_cool.min()
     T_amb_mcp = T_mcp_cool.min()
 
-    exc_bmp = T_bmp_cool - T_amb_bmp
-    exc_mcp = T_mcp_cool - T_amb_mcp
+    exc_bmp = T_bmp_cool - T_bmp_cool.min()
+    exc_mcp = T_mcp_cool - T_mcp_cool.min()
     n_meaningful = int(((exc_bmp > MIN_EXCESS_C) | (exc_mcp > MIN_EXCESS_C)).sum())
 
-    # Fitting window: skip first fit_offset cooling bursts (e.g. atmospheric phase)
-    fit_offset = min(fit_offset, len(cool_means) - 2)  # guard against over-skip
-    T_bmp_fit = T_bmp_cool[fit_offset:]
-    T_mcp_fit = T_mcp_cool[fit_offset:]
+    # Fitting window: [peak_idx + fit_offset .. fit_end] (both inclusive burst numbers)
+    fit_offset = min(fit_offset, len(cool_means) - 2)
+    fit_start_burst = peak_idx + fit_offset
+    fit_end_burst   = fit_end if (fit_end >= 0 and fit_end < len(bursts)) else len(bursts) - 1
+
+    # Relative indices inside cool_means array
+    rel_start = fit_offset
+    rel_end   = fit_end_burst - peak_idx + 1   # exclusive upper bound
+    rel_end   = max(rel_start + 1, min(rel_end, len(cool_means)))
+
+    T_bmp_fit = T_bmp_cool[rel_start:rel_end]
+    T_mcp_fit = T_mcp_cool[rel_start:rel_end]
     t_arr_fit = np.array([k * cycle_s for k in range(len(T_bmp_fit))], dtype=float)
+
+    # T_amb: use only the fit window (avoids re-pressurisation bursts inflating min)
+    T_amb_bmp = T_bmp_fit.min()
+    T_amb_mcp = T_mcp_fit.min()
 
     # ── Burst means CSV ───────────────────────────────────────────────────────
     with open(csv_path, 'w', newline='') as f:
         w = csv.writer(f)
-        w.writerow(['burst', 't_s', 'T_bmp_C', 'T_mcp_C', 'phase', 'n_samples'])
+        w.writerow(['burst', 't_s', 'T_bmp_C', 'P_hPa', 'T_mcp_C', 'phase', 'n_samples'])
         for k, (m, b) in enumerate(zip(all_means, bursts)):
             if k < peak_idx:
                 phase = 'warming'
-            elif k < peak_idx + fit_offset:
-                phase = 'cooling-atm'   # cooling in atmosphere, excluded from fit
-            else:
+            elif k < fit_start_burst:
+                phase = 'cooling-atm'
+            elif k <= fit_end_burst:
                 phase = 'cooling'
-            w.writerow([k, k * cycle_s, f'{m[0]:.4f}', f'{m[1]:.4f}', phase, len(b)])
+            else:
+                phase = 'cooling-post'
+            w.writerow([k, k * cycle_s, f'{m[0]:.4f}', f'{m[1]:.2f}', f'{m[2]:.4f}', phase, len(b)])
     print(f"Saved {csv_path}")
 
     # ── Fit ───────────────────────────────────────────────────────────────────
@@ -191,18 +217,20 @@ def main():
     if peak_idx > 0:
         lines.append(f"Warming bursts : 0 to {peak_idx - 1}")
     lines.append(f"Cooling bursts : {peak_idx} to {len(bursts) - 1}  ({len(cool_means)} total)")
-    if fit_offset > 0:
-        fit_start = peak_idx + fit_offset
+    if fit_offset > 0 or fit_end >= 0:
         lines.append(f"Fit offset     : {fit_offset} bursts  "
-                     f"(atmospheric phase, bursts {peak_idx}–{fit_start - 1} excluded from fit)")
-        lines.append(f"Fit window     : bursts {fit_start} to {len(bursts) - 1}  "
+                     f"(pre-vacuum phase, bursts {peak_idx}–{fit_start_burst - 1} excluded)")
+        lines.append(f"Fit window     : bursts {fit_start_burst} to {fit_end_burst}  "
                      f"({len(T_bmp_fit)} bursts)")
+        if fit_end >= 0:
+            lines.append(f"Fit end        : burst {fit_end_burst}  "
+                         f"(bursts {fit_end_burst + 1}–{len(bursts) - 1} excluded as post-vacuum)")
     lines.append(f"Meaningful (excess > {MIN_EXCESS_C} C) : {n_meaningful}")
     lines.append("")
 
     lines.append(f"T_amb_bmp = {T_amb_bmp:.3f} C  (min observed)")
     lines.append(f"T_amb_mcp = {T_amb_mcp:.3f} C  (min observed)")
-    if T_bmp_cool[-1] - T_amb_bmp > 1.0:
+    if T_bmp_fit[-1] - T_amb_bmp > 1.0:
         lines.append("NOTE: cube did not reach ambient — T_amb may be above true ambient.")
         lines.append("      Tau values are lower bounds.")
     lines.append("")
@@ -234,7 +262,7 @@ def main():
         lines.append("R cannot be computed.")
 
     lines.append("")
-    lines.append(f"{'burst':>6}  {'t(s)':>6}  {'T_bmp':>8}  {'T_mcp':>8}  {'phase':>12}  {'n':>5}")
+    lines.append(f"{'burst':>6}  {'t(s)':>6}  {'T_bmp':>8}  {'P(hPa)':>8}  {'T_mcp':>8}  {'phase':>12}  {'n':>5}")
     for k, (m, b) in enumerate(zip(all_means, bursts)):
         if k < peak_idx:
             phase = 'warming'
@@ -242,7 +270,8 @@ def main():
             phase = 'cooling-atm'
         else:
             phase = 'cooling'
-        lines.append(f"{k:>6}  {k*cycle_s:>6}  {m[0]:>8.3f}  {m[1]:>8.3f}  {phase:>12}  {len(b):>5}")
+        p_str = f'{m[1]:>8.2f}' if m[1] == m[1] else '     nan'
+        lines.append(f"{k:>6}  {k*cycle_s:>6}  {m[0]:>8.3f}  {p_str}  {m[2]:>8.3f}  {phase:>12}  {len(b):>5}")
 
     with open(txt_path, 'w', encoding='utf-8') as f:
         f.write('\n'.join(lines) + '\n')

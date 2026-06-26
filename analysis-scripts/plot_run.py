@@ -108,9 +108,11 @@ def plot_full_series(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
 
 
 def plot_cooling_fit(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
-    atm_mask = np.array([p == 'cooling-atm' for p in phases])
-    vac_mask = np.array([p == 'cooling'     for p in phases])
-    has_atm  = atm_mask.any()
+    atm_mask  = np.array([p == 'cooling-atm'  for p in phases])
+    post_mask = np.array([p == 'cooling-post' for p in phases])
+    vac_mask  = np.array([p == 'cooling'      for p in phases])
+    has_atm   = atm_mask.any()
+    has_post  = post_mask.any()
 
     # fit origin: first vacuum burst (or first cooling burst if no atm phase)
     fit_mask = vac_mask if has_atm else vac_mask
@@ -129,14 +131,19 @@ def plot_cooling_fit(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
     fig, ax = plt.subplots(figsize=(11, 5))
 
     if has_atm:
-        t_atm = t[atm_mask] - t0    # negative — before fit start
+        t_atm = t[atm_mask] - t0
         ax.scatter(t_atm/60, T_bmp[atm_mask], color=LBLUE, s=20, zorder=4,
-                   label='BMP388 (atm., excl.)')
+                   label='BMP388 (pre-vac, excl.)')
         ax.scatter(t_atm/60, T_mcp[atm_mask], color=LRED,  s=20, zorder=4,
-                   label='MCP9808 (atm., excl.)')
+                   label='MCP9808 (pre-vac, excl.)')
         ax.axvline(0, color=GRAY, lw=1, ls='--')
-        ax.text(0.15, ax.get_ylim()[1] if ax.get_ylim()[1] != 1 else T_bmp.max(),
-                'vacuum\nstart', fontsize=8, color=GRAY, va='top')
+
+    if has_post:
+        t_post = t[post_mask] - t0
+        ax.scatter(t_post/60, T_bmp[post_mask], color=LBLUE, s=20, marker='^', zorder=4,
+                   label='BMP388 (post-vac, excl.)')
+        ax.scatter(t_post/60, T_mcp[post_mask], color=LRED,  s=20, marker='^', zorder=4,
+                   label='MCP9808 (post-vac, excl.)')
 
     # vacuum data points
     ax.scatter(t_vac/60, b_vac, color=BLUE, s=25, zorder=5, label='BMP388 (vacuum)')
