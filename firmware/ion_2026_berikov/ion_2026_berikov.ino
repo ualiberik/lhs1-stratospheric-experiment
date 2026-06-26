@@ -274,7 +274,7 @@
 // deep sleep definitions
 #define mS_TO_S_FACTOR 1000ULL     // Conversion factor for microseconds to seconds (ULL makes is an uint64_t)
 #define uS_TO_S_FACTOR 1000000ULL  // Conversion factor for microseconds to seconds (ULL makes is an uint64_t)
-#define SLEEP_TIME 600            // 600 sec (10 min) for sleep time while testing
+#define SLEEP_TIME 60            // 600 sec (10 min) for sleep time while testing
 #define AWAKE_TIME 60              // 60 sec to stay awake
 
 // hardware structures
@@ -1579,6 +1579,13 @@ void setup() {
     err(5, RED);  // general logic: lower flashes indicate hw related errors, e.g wiring. more flashed indicate system errors, e.g. internal flash
   }
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
+  //@BERIKOV I2C bus recover
+  pinMode(SDA, OUTPUT); digitalWrite(SDA, HIGH);
+  pinMode(SCL, OUTPUT);
+  for (int i = 0; i < 9; i++) {
+    digitalWrite(SCL, HIGH); delayMicroseconds(5);
+    digitalWrite(SCL, LOW);  delayMicroseconds(5);
+  }
   Wire.begin();
 #endif
 

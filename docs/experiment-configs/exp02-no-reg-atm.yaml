@@ -1,0 +1,100 @@
+# EXP-02: No-Regolith Baseline — Atmosphere
+# Dataset 2 of 5
+
+experiment:
+  id: 2
+  title: "LHS-1 No-Regolith Baseline at 1 atm"
+  date: 2026-06-25
+
+hardware:
+  esp32-c6-supermini:
+    installed: true
+    role: "Microcontroller"
+    shielded: false
+  Li-ion-JST-charger:
+    installed: false
+  mcp9808:
+    installed: true
+    role: "Exposed temperature — DEPENDENT variable (no regolith shield)"
+    shielded: false
+  regolith_shield:
+    installed: false
+  bmp388:
+    installed: true
+    role: "External temperature & pressure — INDEPENDENT variables"
+    shielded: false
+  vacuum_chamber:
+    installed: false
+    target_pressure_hPa: null
+
+firmware:
+  main_flight_firmware: "firmware/ion_no-regolith_c6/ion_no-regolith_c6.ino"
+  flash_control_firmware: "firmware/flashutil/flashutil.ino"
+  flash_dumper: "firmware/ion_flash_dumper/ion_flash_dumper.ino"
+  awake_time_s: 60
+  sleep_time_s: 60      # bench-test value; flight firmware uses 600
+  write_interval_ms: 100
+
+environment:
+  pressure_atm: 1.0      # ambient, no vacuum chamber
+  temperature_method: "Heat the cube, wait temperature to equalize, then observe cooling"
+
+protocol:
+  steps:
+    1: "Upload flashutil to esp32-c6 supermini"
+    2: "Delete existing log files from flash"
+    3: "Upload ion_no-regolith_c6 to esp32-c6 supermini"
+    4: "Power on the device with Li-ion battery through multimeter"
+    5: "Heat the payload externally in 60 degC oven for 10 minutes"
+    6: "Wait 10 min for temperature to equalize across the cube"
+    7: "Observe cooling to ambient. Run for minimum 45 minutes"
+    8: "Upload ion_flash_dumper to esp32-c6 supermini"
+    9: "Download data"
+
+data_stream:
+  note: "CSV, no header. Wakeup boundaries marked by '00000000-000000' separator lines."
+  key_columns:
+    3:  "temp_bmp388_degC     — external temperature [°C]"
+    4:  "pressure_hPa         — atmospheric pressure [hPa]"
+    7:  "temp_mcp9808_degC    — exposed sensor temperature [°C] (stored in former 'ax' field)"
+
+expected_results:
+  pressure_hPa: "~1013, stable"
+  mcp9808_vs_bmp388: >
+    Without regolith, MCP9808 and BMP388 cool at rates determined solely by
+    their geometry, thermal mass, and mounting position — not by insulation.
+    Any asymmetry (R_02 ≠ 1) is an instrumental baseline, not a physical effect.
+
+analysis:
+  # Burst structure: 60 s awake (600 samples at 100 ms) → 600 s sleep → repeat.
+  # Burst cycle: 120 s. Identical procedure to EXP-04 for direct comparability.
+
+  steps:
+    1: >
+      Parse raw log: split into bursts at '00000000-000000' separator lines.
+      Discard burst 0 (equalization phase).
+      Burst 1 is the first post-equalization snapshot (reference starting point).
+    2: >
+      For each burst k (k = 1, 2, …):
+        T_bmp[k]  = mean of column 3 across all rows in burst k
+        T_mcp[k]  = mean of column 7 across all rows in burst k
+        t[k]      = (k − 1) × 120 s
+    3: >
+      Estimate ambient temperature T_amb = mean of the last 2 burst averages.
+    4: >
+      Fit Newton's cooling law independently to each sensor's burst means:
+        T(t) = T_amb + A × exp(−t / τ)
+      Use nonlinear least squares (e.g., scipy.optimize.curve_fit).
+    5: >
+      If fewer than 3 post-equalization bursts show meaningful temperature change,
+      fall back to intra-burst fitting on the 600 samples of burst 1
+      (t_sample = sample_index × 0.1 s).
+
+  primary_metric: "Baseline insulation ratio R_02 = τ_mcp / τ_bmp"
+
+  baseline_output:
+    consumed_by: "EXP-04 (regolith, atmosphere)"
+    formula: "Δ_atm = R_EXP04 − R_02"
+    interpretation: >
+      R_02 captures inherent sensor asymmetry at 1 atm independent of regolith.
+      Subtracting it from R_EXP04 isolates the pure regolith contribution.

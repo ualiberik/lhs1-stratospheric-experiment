@@ -1,0 +1,35 @@
+Cooling Analysis: exp04_reg-atm_2026-06-25_run3
+============================================================
+Cycle          : 120 s  (awake 60 s + sleep 60 s)
+Total separators : 16
+Non-empty bursts : 16
+Peak burst     : 6  (T_bmp = 50.58 C)
+Warming bursts : 0 to 5
+Cooling bursts : 6 to 15  (10 total)
+Meaningful (excess > 0.1 C) : 9
+
+T_amb_bmp = 37.733 C  (min observed)
+T_amb_mcp = 36.042 C  (min observed)
+
+MCP9808 : A = 12.29 C,  tau = 543 s  (+-78 s)
+BMP388  : A = 13.90 C,  tau = 470 s  (+-43 s)
+
+R = tau_mcp / tau_bmp = 543 / 470 = 1.156
+
+ burst    t(s)     T_bmp     T_mcp     phase      n
+     0       0    31.799    29.513   warming    678
+     1     120    33.243    30.327   warming    680
+     2     240    37.892    33.414   warming    678
+     3     360    42.509    37.334   warming    677
+     4     480    46.227    41.090   warming    679
+     5     600    49.106    44.330   warming    675
+     6     720    50.578    46.628   cooling    678
+     7     840    49.053    46.662   cooling    679
+     8     960    46.825    45.220   cooling    678
+     9    1080    45.009    43.577   cooling    678
+    10    1200    43.292    41.865   cooling    676
+    11    1320    41.800    40.370   cooling    677
+    12    1440    40.501    38.942   cooling    677
+    13    1560    39.383    37.826   cooling    675
+    14    1680    38.425    36.798   cooling    676
+    15    1800    37.733    36.042   cooling    105

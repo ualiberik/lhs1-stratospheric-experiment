@@ -1,0 +1,121 @@
+# EXP-05: Regolith Configuration — Near-Vacuum
+# Dataset 5 of 5
+
+experiment:
+  id: 5
+  title: "LHS-1 Regolith Thermal Insulation in Near-Vacuum"
+  date: 2026-06-26   # run 1 performed on this date
+
+hardware:
+  esp32-s3:
+    installed: true
+    role: "Microcontroller"
+    shielded: false
+  Li-ion-JST-charger:
+    installed: true
+    role: "Power supply from li-ion battery via JST"
+    shielded: false
+  mcp9808:
+    installed: true
+    role: "Under-regolith temperature — DEPENDENT variable"
+    shielded: true
+  regolith_shield:
+    installed: true
+    material: "LHS-1 Lunar Highlands Simulant"
+    thickness_mm: 3.0-8.0
+    note: "Must be identical to EXP-04 shield configuration"
+  bmp388:
+    installed: true
+    role: "External temperature & pressure — INDEPENDENT variables"
+    shielded: false
+  vacuum_chamber:
+    installed: true
+    target_pressure_hPa: 10
+
+firmware:
+  main_flight_firmware: "firmware/ion_2026_berikov/ion_2026_berikov.ino"
+  flash_control_firmware: "firmware/flashutil/flashutil.ino"
+  flash_dumper: "firmware/ion_flash_dumper/ion_flash_dumper.ino"
+  awake_time_s: 60
+  sleep_time_s: 60      # bench-test value; flight firmware uses 600
+  write_interval_ms: 100
+
+environment:
+  pressure_hPa: 10   # vacuum chamber
+  temperature_method: "Heat the cube, wait temperature to equalize, then observe cooling inside the vacuum chamber"
+
+protocol:
+  steps:
+    1: "Upload flashutil to esp32-s3"
+    2: "Delete existing log files from flash"
+    3: "Upload ion_2026_berikov to esp32-s3"
+    4: "Power on the device with Li-ion battery through multimeter"
+    5: "Heat the payload externally in 60 degC oven for 10 minutes"
+    6: "Place the heated payload inside the vacuum chamber (unsealed)"
+    7: "Wait 10 min for temperature to equalize across the cube"
+    8: "Seal the chamber. Begin pumping immediately. Keep pump running throughout cooling. Target: ~12 hPa on the BMP388 sensor"
+    9: "Observe cooling to ambient. Run for ~60 minutes"
+    10: "Vent chamber slowly. Remove payload"
+    11: "Upload ion_flash_dumper to esp32-s3"
+    12: "Download data"
+
+data_stream:
+  note: "CSV, no header. Wakeup boundaries marked by '00000000-000000' separator lines."
+  key_columns:
+    3:  "temp_bmp388_degC     — external temperature [°C]"
+    4:  "pressure_hPa         — chamber pressure [hPa] (may saturate near 300 hPa)"
+    7:  "temp_mcp9808_degC    — under-regolith temperature [°C] (stored in former 'ax' field)"
+
+expected_results:
+  pressure_hPa: "~12 hPa stable throughout cooling (BMP388); confirm with stable fit window before interpreting R"
+  mcp9808_vs_bmp388: "To be determined from reliable run with stable vacuum."
+
+analysis:
+  # Same burst structure as EXP-04 (120 s cycle). Apply identical procedure
+  # to enable direct comparison of R across experiments.
+  # In near-vacuum, cooling is radiation-dominated and slower than at 1 atm,
+  # so τ values are expected to be larger — more bursts will carry signal.
+
+  steps:
+    1: >
+      Parse raw log: split into bursts at '00000000-000000' separator lines.
+      Discard burst 0 (equalization phase).
+      Burst 1 is the first post-equalization snapshot (reference starting point).
+    2: >
+      For each burst k (k = 1, 2, …):
+        T_bmp[k]  = mean of column 3 across all rows in burst k
+        T_mcp[k]  = mean of column 7 across all rows in burst k
+        t[k]      = (k − 1) × 120 s
+    3: >
+      Estimate ambient temperature T_amb = mean of the last 2 burst averages.
+    4: >
+      Fit Newton's cooling law independently to each sensor's burst means:
+        T(t) = T_amb + A × exp(−t / τ)
+      Use nonlinear least squares (e.g., scipy.optimize.curve_fit).
+    5: >
+      If fewer than 3 post-equalization bursts show meaningful temperature change,
+      fall back to intra-burst fitting on the 600 samples of burst 1
+      (t_sample = sample_index × 0.1 s).
+
+  primary_metric: "Insulation ratio R = τ_mcp / τ_bmp"
+
+  comparison_with_no_regolith:
+    reference_experiment: "EXP-03 (no regolith, near-vacuum)"
+    method: >
+      Apply identical burst-averaging and Newton's law fit to EXP-03 data
+      to obtain R_03 = τ_mcp / τ_bmp under the same pressure but without regolith.
+    net_regolith_contribution: "Δ_vac = R_EXP05 − R_EXP03"
+    interpretation: >
+      Δ_vac > Δ_atm (from EXP-04) → near-vacuum enhances regolith insulation
+                                      → supports hypothesis BECAUSE clause.
+      Δ_vac ≤ Δ_atm              → hypothesis requires revision.
+    note: >
+      R_EXP03 captures the baseline sensor asymmetry in vacuum conditions,
+      which may differ from R_EXP02 (atmosphere) since the two sensors
+      couple differently to the surrounding medium at low pressure.
+      Both baselines are necessary for a clean result.
+
+status:
+  runs_performed: 1
+  pending_repeat: true
+  repeat_reason: "Pressure unstable during run 1 (25-93 hPa). Pump must be held on continuously throughout cooling."

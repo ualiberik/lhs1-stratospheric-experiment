@@ -1,2 +1,4 @@
 firmware/ion_2026/
 firmware/flashutil/
+**/__pycache__/
+*.pyc
