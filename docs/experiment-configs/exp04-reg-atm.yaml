@@ -113,3 +113,7 @@ analysis:
       R_EXP02 captures the baseline asymmetry between the two sensors
       (different thermal mass, position, capsule geometry) independent of regolith.
       Subtracting it isolates the pure regolith contribution.
+
+status:
+  runs_performed: 4
+  completed: true

@@ -7,14 +7,12 @@ experiment:
   date: 2026-06-25
 
 hardware:
-  esp32-s3:
+  esp32-c6-supermini:
     installed: true
     role: "Microcontroller"
     shielded: false
   Li-ion-JST-charger:
-    installed: true
-    role: "Power supply from li-ion battery via JST"
-    shielded: false
+    installed: false
   mcp9808:
     installed: true
     role: "Exposed temperature — DEPENDENT variable (no regolith shield)"
@@ -30,7 +28,7 @@ hardware:
     target_pressure_hPa: null
 
 firmware:
-  main_flight_firmware: "firmware/ion_2026_berikov/ion_2026_berikov.ino"
+  main_flight_firmware: "firmware/ion_no-regolith_c6/ion_no-regolith_c6.ino"
   flash_control_firmware: "firmware/flashutil/flashutil.ino"
   flash_dumper: "firmware/ion_flash_dumper/ion_flash_dumper.ino"
   awake_time_s: 60
@@ -43,14 +41,14 @@ environment:
 
 protocol:
   steps:
-    1: "Upload flashutil to esp32-s3"
+    1: "Upload flashutil to esp32-c6 supermini"
     2: "Delete existing log files from flash"
-    3: "Upload ion_2026_berikov to esp32-s3"
+    3: "Upload ion_no-regolith_c6 to esp32-c6 supermini"
     4: "Power on the device with Li-ion battery through multimeter"
     5: "Heat the payload externally in 60 degC oven for 10 minutes"
     6: "Wait 10 min for temperature to equalize across the cube"
     7: "Observe cooling to ambient. Run for minimum 45 minutes"
-    8: "Upload ion_flash_dumper to esp32-s3"
+    8: "Upload ion_flash_dumper to esp32-c6 supermini"
     9: "Download data"
 
 data_stream:

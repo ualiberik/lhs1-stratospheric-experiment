@@ -4,7 +4,7 @@
 experiment:
   id: 5
   title: "LHS-1 Regolith Thermal Insulation in Near-Vacuum"
-  date: 2026-06-25
+  date: 2026-06-26   # run 1 performed on this date
 
 hardware:
   esp32-s3:
@@ -53,11 +53,11 @@ protocol:
     5: "Heat the payload externally in 60 degC oven for 10 minutes"
     6: "Place the heated payload inside the vacuum chamber (unsealed)"
     7: "Wait 10 min for temperature to equalize across the cube"
-    7: "Seal the chamber. Begin pumping. Target: 10 hPa on the independent gauge"
-    8: "Observe cooling to ambient. Run for minimum 1.5 hours"
-    9: "Vent chamber slowly. Remove payload"
-    10: "Upload ion_flash_dumper to esp32-s3"
-    11: "Download data"
+    8: "Seal the chamber. Begin pumping immediately. Keep pump running throughout cooling. Target: ~12 hPa on the BMP388 sensor"
+    9: "Observe cooling to ambient. Run for ~60 minutes"
+    10: "Vent chamber slowly. Remove payload"
+    11: "Upload ion_flash_dumper to esp32-s3"
+    12: "Download data"
 
 data_stream:
   note: "CSV, no header. Wakeup boundaries marked by '00000000-000000' separator lines."
@@ -67,11 +67,8 @@ data_stream:
     7:  "temp_mcp9808_degC    — under-regolith temperature [°C] (stored in former 'ax' field)"
 
 expected_results:
-  pressure_hPa: "BMP388 ≤ 300 hPa (may saturate); independent gauge confirms ~10 hPa"
-  mcp9808_vs_bmp388: >
-    MCP9808 cools slower than BMP388 due to regolith insulation.
-    ΔT should be noticeably greater than in EXP-04 (near-vacuum suppresses
-    convective heat transfer through inter-particle air).
+  pressure_hPa: "~12 hPa stable throughout cooling (BMP388); confirm with stable fit window before interpreting R"
+  mcp9808_vs_bmp388: "To be determined from reliable run with stable vacuum."
 
 analysis:
   # Same burst structure as EXP-04 (120 s cycle). Apply identical procedure
@@ -117,3 +114,8 @@ analysis:
       which may differ from R_EXP02 (atmosphere) since the two sensors
       couple differently to the surrounding medium at low pressure.
       Both baselines are necessary for a clean result.
+
+status:
+  runs_performed: 1
+  pending_repeat: true
+  repeat_reason: "Pressure unstable during run 1 (25-93 hPa). Pump must be held on continuously throughout cooling."
