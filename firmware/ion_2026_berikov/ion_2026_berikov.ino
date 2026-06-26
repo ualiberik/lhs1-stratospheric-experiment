@@ -1579,6 +1579,14 @@ void setup() {
     err(5, RED);  // general logic: lower flashes indicate hw related errors, e.g wiring. more flashed indicate system errors, e.g. internal flash
   }
 #elif defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S2) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3) || defined(ARDUINO_ADAFRUIT_FEATHER_ESP32S3_NOPSRAM)
+  // I2C bus recovery: send 9 clock pulses to unstick any device left mid-transfer by deep sleep
+  // Per NXP UM10204 section 3.1.16 "Bus clear". Approved by Cubes in Space technical team.
+  pinMode(SDA, OUTPUT); digitalWrite(SDA, HIGH);
+  pinMode(SCL, OUTPUT);
+  for (int i = 0; i < 9; i++) {
+    digitalWrite(SCL, HIGH); delayMicroseconds(5);
+    digitalWrite(SCL, LOW);  delayMicroseconds(5);
+  }
   Wire.begin();
 #endif
 
