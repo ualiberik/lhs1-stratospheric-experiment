@@ -1,0 +1,64 @@
+Cooling Analysis: exp05_reg-vac_2026-06-26_run1
+============================================================
+Cycle          : 120 s  (awake 60 s + sleep 60 s)
+Total separators : 45
+Non-empty bursts : 45
+Peak burst     : 8  (T_bmp = 55.67 C)
+Warming bursts : 0 to 7
+Cooling bursts : 8 to 44  (37 total)
+Meaningful (excess > 0.1 C) : 35
+
+T_amb_bmp = 31.388 C  (min observed)
+T_amb_mcp = 29.228 C  (min observed)
+
+MCP9808 : A = 24.20 C,  tau = 952 s  (+-36 s)
+BMP388  : A = 26.17 C,  tau = 839 s  (+-21 s)
+
+R = tau_mcp / tau_bmp = 952 / 839 = 1.135
+
+ burst    t(s)     T_bmp     T_mcp     phase      n
+     0       0    27.570    26.378   warming    678
+     1     120    27.564    26.968   warming    680
+     2     240    28.369    27.077   warming    680
+     3     360    29.534    27.578   warming    678
+     4     480    35.753    30.491   warming    679
+     5     600    42.773    35.715   warming    679
+     6     720    48.375    41.264   warming    679
+     7     840    52.579    46.008   warming    679
+     8     960    55.670    49.761   cooling    675
+     9    1080    55.091    51.207   cooling    676
+    10    1200    52.558    50.175   cooling    680
+    11    1320    49.944    48.443   cooling    679
+    12    1440    46.623    45.355   cooling   1354
+    13    1560    43.595    42.273   cooling    678
+    14    1680    41.712    40.565   cooling    677
+    15    1800    40.112    38.878   cooling    674
+    16    1920    38.959    37.614   cooling    674
+    17    2040    37.883    36.316   cooling    678
+    18    2160    37.122    35.313   cooling    679
+    19    2280    36.489    34.495   cooling    675
+    20    2400    35.936    33.862   cooling    679
+    21    2520    35.344    33.247   cooling    677
+    22    2640    35.016    32.927   cooling    675
+    23    2760    34.634    32.511   cooling    677
+    24    2880    34.301    32.202   cooling    679
+    25    3000    33.998    31.917   cooling    678
+    26    3120    33.699    31.716   cooling    676
+    27    3240    33.417    31.414   cooling    679
+    28    3360    33.200    31.149   cooling    675
+    29    3480    32.998    30.934   cooling    679
+    30    3600    32.822    30.745   cooling    675
+    31    3720    32.666    30.539   cooling    674
+    32    3840    32.516    30.405   cooling    678
+    33    3960    32.403    30.339   cooling    680
+    34    4080    32.494    30.372   cooling    676
+    35    4200    32.432    30.447   cooling    678
+    36    4320    32.305    30.407   cooling    676
+    37    4440    32.160    30.323   cooling    680
+    38    4560    32.018    30.184   cooling    679
+    39    4680    31.728    29.919   cooling    679
+    40    4800    31.736    29.881   cooling    678
+    41    4920    31.612    29.791   cooling    677
+    42    5040    31.501    29.684   cooling    675
+    43    5160    31.482    29.274   cooling     10
+    44    5280    31.388    29.228   cooling     59

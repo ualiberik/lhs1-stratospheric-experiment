@@ -87,7 +87,7 @@ def plot_full_series(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
 
     ax.set_xlabel('Time (min)', fontsize=11)
     ax.set_ylabel('Temperature (°C)', fontsize=11)
-    ax.set_title(f'EXP-04 Run 4 — full time series\n'
+    ax.set_title(f'{stem} — full time series\n'
                  f'τ_bmp = {fit["tau_bmp"]:.0f} s, '
                  f'τ_mcp = {fit["tau_mcp"]:.0f} s, '
                  f'R = {fit["R"]:.3f}', fontsize=11)
@@ -139,7 +139,7 @@ def plot_cooling_fit(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
 
     ax.set_xlabel('Time since peak (min)', fontsize=11)
     ax.set_ylabel('Temperature (°C)', fontsize=11)
-    ax.set_title(f'EXP-04 Run 4 — Newton\'s law cooling fit\n'
+    ax.set_title(f'{stem} — Newton\'s law cooling fit\n'
                  f'R = τ_mcp / τ_bmp = {fit["tau_mcp"]:.0f} / {fit["tau_bmp"]:.0f} = {fit["R"]:.3f}',
                  fontsize=11)
     ax.legend(fontsize=9)
