@@ -274,7 +274,7 @@
 // deep sleep definitions
 #define mS_TO_S_FACTOR 1000ULL     // Conversion factor for microseconds to seconds (ULL makes is an uint64_t)
 #define uS_TO_S_FACTOR 1000000ULL  // Conversion factor for microseconds to seconds (ULL makes is an uint64_t)
-#define SLEEP_TIME 60            // 600 sec (10 min) for sleep time while testing
+#define SLEEP_TIME 600            // 600 sec (10 min) for sleep time while testing
 #define AWAKE_TIME 60              // 60 sec to stay awake
 
 // hardware structures
