@@ -108,22 +108,39 @@ def plot_full_series(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
 
 
 def plot_cooling_fit(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
-    cool_mask = np.array([p == 'cooling' for p in phases])
-    t_cool  = t[cool_mask]
-    b_cool  = T_bmp[cool_mask]
-    m_cool  = T_mcp[cool_mask]
-    t_rel   = t_cool - t_cool[0]   # seconds since peak
+    atm_mask = np.array([p == 'cooling-atm' for p in phases])
+    vac_mask = np.array([p == 'cooling'     for p in phases])
+    has_atm  = atm_mask.any()
 
-    # fit curves
-    t_fine = np.linspace(0, t_rel[-1] * 1.05, 500)
+    # fit origin: first vacuum burst (or first cooling burst if no atm phase)
+    fit_mask = vac_mask if has_atm else vac_mask
+    t0       = t[fit_mask][0]
+
+    # relative time: 0 at fit start
+    t_vac = t[vac_mask] - t0
+    b_vac = T_bmp[vac_mask]
+    m_vac = T_mcp[vac_mask]
+
+    # fit curves (t=0 is fit start, A is the amplitude at that moment)
+    t_fine    = np.linspace(0, t_vac[-1] * 1.05, 500)
     curve_bmp = fit['T_amb_bmp'] + fit['A_bmp'] * np.exp(-t_fine / fit['tau_bmp'])
     curve_mcp = fit['T_amb_mcp'] + fit['A_mcp'] * np.exp(-t_fine / fit['tau_mcp'])
 
     fig, ax = plt.subplots(figsize=(11, 5))
 
-    # data points
-    ax.scatter(t_rel/60, b_cool, color=BLUE, s=25, zorder=5, label='BMP388 (data)')
-    ax.scatter(t_rel/60, m_cool, color=RED,  s=25, zorder=5, label='MCP9808 (data)')
+    if has_atm:
+        t_atm = t[atm_mask] - t0    # negative — before fit start
+        ax.scatter(t_atm/60, T_bmp[atm_mask], color=LBLUE, s=20, zorder=4,
+                   label='BMP388 (atm., excl.)')
+        ax.scatter(t_atm/60, T_mcp[atm_mask], color=LRED,  s=20, zorder=4,
+                   label='MCP9808 (atm., excl.)')
+        ax.axvline(0, color=GRAY, lw=1, ls='--')
+        ax.text(0.15, ax.get_ylim()[1] if ax.get_ylim()[1] != 1 else T_bmp.max(),
+                'vacuum\nstart', fontsize=8, color=GRAY, va='top')
+
+    # vacuum data points
+    ax.scatter(t_vac/60, b_vac, color=BLUE, s=25, zorder=5, label='BMP388 (vacuum)')
+    ax.scatter(t_vac/60, m_vac, color=RED,  s=25, zorder=5, label='MCP9808 (vacuum)')
 
     # fit curves
     ax.plot(t_fine/60, curve_bmp, color=BLUE, lw=2,
@@ -137,7 +154,8 @@ def plot_cooling_fit(bursts, t, T_bmp, T_mcp, phases, fit, stem, out_dir):
     ax.axhline(fit['T_amb_mcp'], color=RED,  lw=0.8, ls=':', alpha=0.5,
                label=f'T_amb MCP = {fit["T_amb_mcp"]:.1f} °C')
 
-    ax.set_xlabel('Time since peak (min)', fontsize=11)
+    xlabel = 'Time since vacuum start (min)' if has_atm else 'Time since peak (min)'
+    ax.set_xlabel(xlabel, fontsize=11)
     ax.set_ylabel('Temperature (°C)', fontsize=11)
     ax.set_title(f'{stem} — Newton\'s law cooling fit\n'
                  f'R = τ_mcp / τ_bmp = {fit["tau_mcp"]:.0f} / {fit["tau_bmp"]:.0f} = {fit["R"]:.3f}',
