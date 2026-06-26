@@ -14,7 +14,7 @@ This project is the stratospheric experiment for a high-altitude balloon flight.
 &nbsp;
 
 ## Status
-Currently, the experiment is assembled and is tested on the bench.
+The ground experiments were conducted and the payload cube is fully ready for flight.
 
 ## Experiment Title
 Thermal Insulation Efficiency of LHS-1 Lunar
@@ -39,7 +39,7 @@ Focus Area, and Zacny et al. (2012) “Lunar Regolith Mechanics and Its Relevanc
 ## Hypothesis
 _**IF**_ a high-accuracy temperature sensor (+-0.25°C accuracy, MCP9808) exposed to extremely low
 temperatures (-50 °C to -60°C) and near-vacuum atmospheric pressure (0.01 ~ 0.1 atm corresponding to 15 -
-25 km altitude) during a stratospheric balloon flight is shielded by 3 mm of lunar highlands regolith simulant
+25 km altitude) during a stratospheric balloon flight is shielded by 3-8 mm of lunar highlands regolith simulant
 (LHS-1, with bulk density ~1.6 g/cm3),
 
 _**THEN**_ the temperature drop under the protection of the regolith will be at least 30 - 50% slower (over a multi-hour exposure period), compared to an unprotected ambient sensor (BMP-388), proving the usefulness of
@@ -48,8 +48,6 @@ lunar regolith as a thermal insulation and shielding material for lunar surface 
 _**BECAUSE**_ the extremely low atmospheric pressure (0.01 atm) will remove air between regolith particles,
 significantly decreasing the efficiency of convective heat transfer and the overall thermal conductivity of the
 regolith.
-
-_This is theoretical hypothesis. It is to be changed after the bench tests._
 
 ## Variables
 
@@ -119,18 +117,26 @@ The 3D-printed PET-G (Polyethylene Terephthalate Glyco — one of the plastics u
 lhs1-stratospheric-experiment/
 ├── README.md
 ├── LICENSE
-├── firmware/          # electronics software
-├── cad/               # Fusion 360 3D models and renders
-|   ├── stl/           # 3D printed components stl files
-|   ├── step/          # full final 3D models
-|   └── renders/       # 3D models render images
-├── hardware/          # experiment hardware and electronics
+├── firmware/
+│   ├── ion_2026_berikov/     # main flight firmware
+│   ├── flashutil/            # flash management
+│   └── ion_flash_dumper/     # data download
+├── cad/
+│   ├── stl/
+│   ├── step/
+│   └── renders/
+├── hardware/
 ├── data/
-│   ├── raw/           # test and flight upload dumps      
-│   └── processed/     # processed data
-├── analysis/          # analysis scripts, graphs
-├── docs/              
-└── assets/            # service files
+│   ├── exp01-flight/
+│   ├── exp02-no-reg-atm/
+│   ├── exp03-no-reg-vac/
+│   ├── exp04-reg-atm/
+│   └── exp05-reg-vac/
+├── analysis-scripts/
+├── docs/
+│   ├── results-summary.md
+│   └── experiment-configs/
+└── assets/
 ```
 ## Author Contributions
 1. **Uali Berik** — Conceptualization, Methodology, Mechanical design (CAD),
